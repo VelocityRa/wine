@@ -1711,7 +1711,10 @@ static HRESULT parse_fx10_variable(const char *data, size_t data_size,
     read_dword(ptr, &v->buffer_offset);
     TRACE("Variable offset in buffer: %#x.\n", v->buffer_offset);
 
-    skip_dword_unknown("variable", ptr, 1);
+    DWORD ayy;
+    read_dword(ptr, &ayy);
+    ERR("AYYYY %x\n",ayy);
+    // skip_dword_unknown("variable", ptr, 1);
 
     read_dword(ptr, &v->flag);
     TRACE("Variable flag: %#x.\n", v->flag);
@@ -4125,17 +4128,48 @@ static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_GetRawValue(ID3D10
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_SetFloat(ID3D10EffectScalarVariable *iface,
         float value)
 {
-    FIXME("iface %p, value %.8e stub!\n", iface, value);
+    struct d3d10_effect_scalar_variable *scalar;
 
-    return E_NOTIMPL;
+    TRACE("iface %p, value %.8e\n", iface, value);
+
+    scalar = &impl_from_ID3D10EffectVariable((ID3D10EffectVariable *)iface)->u.scalar;
+    scalar->value.f = value;
+    scalar->type = D3D_EST_FLOAT;
+    scalar->is_array = FALSE;
+
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_GetFloat(ID3D10EffectScalarVariable *iface,
         float *value)
 {
-    FIXME("iface %p, value %p stub!\n", iface, value);
+    struct d3d10_effect_scalar_variable *scalar;
 
-    return E_NOTIMPL;
+    TRACE("iface %p, value %p\n", iface, value);
+
+    if (!value)
+        return D3DERR_INVALIDCALL;
+
+    scalar = &impl_from_ID3D10EffectVariable((ID3D10EffectVariable *)iface)->u.scalar;
+
+    switch(scalar->type)
+    {
+        case D3D_EST_BOOL:
+            *(float*)value = scalar->value.b ? 1.0f : 0.0f;
+            break;
+        case D3D_EST_INT:
+            *(float*)value = (float)scalar->value.i;
+            break;
+        case D3D_EST_FLOAT:
+            *(float*)value = (float)scalar->value.f;
+            break;
+        case D3D_EST_NONE:
+        default:
+            ERR("invalid src type: %u\n", scalar->type);
+            return D3DERR_INVALIDCALL;
+    }
+
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_SetFloatArray(ID3D10EffectScalarVariable *iface,
@@ -4157,17 +4191,47 @@ static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_GetFloatArray(ID3D
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_SetInt(ID3D10EffectScalarVariable *iface,
         int value)
 {
-    FIXME("iface %p, value %d stub!\n", iface, value);
+    struct d3d10_effect_scalar_variable *scalar;
 
-    return E_NOTIMPL;
+    TRACE("iface %p, value %d\n", iface, value);
+
+    scalar = &impl_from_ID3D10EffectVariable((ID3D10EffectVariable *)iface)->u.scalar;
+    scalar->value.i = value;
+    scalar->type = D3D_EST_INT;
+    scalar->is_array = FALSE;
+
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_GetInt(ID3D10EffectScalarVariable *iface,
         int *value)
 {
-    FIXME("iface %p, value %p stub!\n", iface, value);
+    struct d3d10_effect_scalar_variable *scalar;
 
-    return E_NOTIMPL;
+    TRACE("iface %p, value %p\n", iface, value);
+    if (!value)
+        return D3DERR_INVALIDCALL;
+
+    scalar = &impl_from_ID3D10EffectVariable((ID3D10EffectVariable *)iface)->u.scalar;
+
+    switch(scalar->type)
+    {
+        case D3D_EST_BOOL:
+            *(int*)value = scalar->value.b ? 1 : 0;
+            break;
+        case D3D_EST_INT:
+            *(int*)value = (int)scalar->value.i;
+            break;
+        case D3D_EST_FLOAT:
+            *(int*)value = (int)scalar->value.f;
+            break;
+        case D3D_EST_NONE:
+        default:
+            ERR("invalid src type: %u\n", scalar->type);
+            return D3DERR_INVALIDCALL;
+    }
+
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_SetIntArray(ID3D10EffectScalarVariable *iface,
@@ -4189,17 +4253,47 @@ static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_GetIntArray(ID3D10
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_SetBool(ID3D10EffectScalarVariable *iface,
         BOOL value)
 {
-    FIXME("iface %p, value %d stub!\n", iface, value);
+    struct d3d10_effect_scalar_variable *scalar;
 
-    return E_NOTIMPL;
+    TRACE("iface %p, value %d\n", iface, value);
+
+    scalar = &impl_from_ID3D10EffectVariable((ID3D10EffectVariable *)iface)->u.scalar;
+    scalar->value.b = value;
+    scalar->type = D3D_EST_BOOL;
+    scalar->is_array = FALSE;
+
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_GetBool(ID3D10EffectScalarVariable *iface,
         BOOL *value)
 {
-    FIXME("iface %p, value %p stub!\n", iface, value);
+    struct d3d10_effect_scalar_variable *scalar;
 
-    return E_NOTIMPL;
+    TRACE("iface %p, value %p\n", iface, value);
+
+    if (!value)
+        return D3DERR_INVALIDCALL;
+
+    scalar = &impl_from_ID3D10EffectVariable((ID3D10EffectVariable *)iface)->u.scalar;
+
+    switch(scalar->type)
+    {
+        case D3D_EST_BOOL:
+            *(float*)value = scalar->value.b ? 1.0f : 0.0f;
+            break;
+        case D3D_EST_INT:
+            *(float*)value = (float)scalar->value.i;
+            break;
+        case D3D_EST_FLOAT:
+            *(float*)value = (float)scalar->value.f;
+            break;
+        case D3D_EST_NONE:
+        default:
+            ERR("invalid src type: %u\n", scalar->type);
+            return D3DERR_INVALIDCALL;
+    }
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE d3d10_effect_scalar_variable_SetBoolArray(ID3D10EffectScalarVariable *iface,

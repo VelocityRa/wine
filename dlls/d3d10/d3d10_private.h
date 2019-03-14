@@ -65,6 +65,14 @@ enum d3d10_effect_object_operation
     D3D10_EOO_ANONYMOUS_SHADER = 7,
 };
 
+enum d3d10_effect_scalar_type
+{
+    D3D_EST_NONE,
+    D3D_EST_INT,
+    D3D_EST_FLOAT,
+    D3D_EST_BOOL,
+};
+
 struct d3d10_effect_object
 {
     struct d3d10_effect_pass *pass;
@@ -98,6 +106,18 @@ struct d3d10_effect_shader_variable
         ID3D10PixelShader *ps;
         ID3D10GeometryShader *gs;
     } shader;
+};
+
+struct d3d10_effect_scalar_variable
+{
+    union
+    {
+        int i;
+        float f;
+        BOOL b;
+    } value;
+    enum d3d10_effect_scalar_type type;
+    BOOL is_array;
 };
 
 struct d3d10_effect_state_object_variable
@@ -173,6 +193,7 @@ struct d3d10_effect_variable
     {
         struct d3d10_effect_state_object_variable state;
         struct d3d10_effect_shader_variable shader;
+        struct d3d10_effect_scalar_variable scalar;
     } u;
 };
 
